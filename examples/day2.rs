@@ -2511,6 +2511,61 @@ X: Rock
 Y: PAper
 Z: Scissors
 */
+
+use std::{char::ParseCharError, cmp::Ordering::*, fmt::format, str::FromStr, string::ParseError};
+
+#[derive(Eq, PartialEq, PartialOrd)]
+enum Shape {
+    Rock,
+    Paper,
+    Scissors,
+}
+
+impl Shape {
+    fn shape_score(&self) -> u32 {
+        match self {
+            Shape::Rock => 1,
+            Shape::Paper => 2,
+            Shape::Scissors => 3,
+        }
+    }
+
+    fn round(&self, them: &Shape) -> u32 {
+        match self.cmp(&them) {
+            Less => 0,
+            Equal => 3,
+            Greater => 6,
+        }
+    }
+}
+
+impl Ord for Shape {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        match (self, other) {
+            // same
+            (Shape::Rock, Shape::Paper) => Less,
+            (Shape::Rock, Shape::Scissors) => Greater,
+            (Shape::Paper, Shape::Rock) => Greater,
+            (Shape::Paper, Shape::Scissors) => Less,
+            (Shape::Scissors, Shape::Rock) => Less,
+            (Shape::Scissors, Shape::Paper) => Greater,
+            _ => Equal,
+        }
+    }
+}
+
+impl FromStr for Shape {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "A" | "X" => Ok(Shape::Rock),
+            "B" | "Y" => Ok(Shape::Paper),
+            "C" | "Z" => Ok(Shape::Scissors),
+            _ => Err(()),
+        }
+    }
+}
+
 fn shape_score(shape: &str) -> u32 {
     match shape {
         "X" => 1,
@@ -2560,6 +2615,7 @@ fn decide_outcome(opponent: &str, command: &str) -> String {
 }
 
 fn main() {
+    // part 1, first draft
     let matches = INPUT.lines();
     let mut match_counter = 0;
     for line in matches {
@@ -2570,6 +2626,21 @@ fn main() {
     }
     println!("SCORE: {match_counter}");
 
+    // part 1, enum
+    let matches = INPUT.lines();
+    let mut match_counter = 0;
+    for line in matches {
+        let mut line = line.split(" ");
+        let (opponent, you) = (
+            Shape::from_str(line.next().unwrap()).unwrap(),
+            Shape::from_str(line.next().unwrap()).unwrap(),
+        );
+        match_counter += you.shape_score();
+        match_counter += you.round(&opponent);
+    }
+    println!("SCORE: {match_counter}");
+
+    // part 2, first draft
     let matches = INPUT.lines();
     match_counter = 0;
     for line in matches {
