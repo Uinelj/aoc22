@@ -1,3 +1,4 @@
+use core::str::Lines;
 use std::collections::HashSet;
 
 const INPUT: &str = r#"wgqJtbJMqZVTwWPZZT
@@ -302,14 +303,22 @@ pphWQMVjQVVBWWjRlHlHnlcLDDhcnF
 JQwwWVPBwMJpJwpWwGBWNzrDzSSzfgTPqTSTTtSPgt
 "#;
 
+///use itertools::Itertools; // 0.10.5
 fn get_dup_item_type(items: &str) -> Option<char> {
     let (h1, h2) = items.split_at(items.len() / 2);
     let h1: HashSet<char> = h1.chars().into_iter().collect();
-    let mut h2 = h2.chars().into_iter();
+    let mut h2 = h2.chars();
 
     h2.find(|x| h1.contains(x))
 }
 
+fn get_dup_p2(lines: &[&str]) -> Option<char> {
+    let h1: HashSet<char> = lines[0].chars().into_iter().collect();
+    let h2: HashSet<char> = lines[1].chars().into_iter().collect();
+    let mut h3 = lines[2].chars();
+
+    h3.find(|x| h2.contains(x) && h1.contains(x))
+}
 #[inline]
 fn priority(c: &char) -> u32 {
     let offset = match c {
@@ -320,8 +329,24 @@ fn priority(c: &char) -> u32 {
     *c as u32 - offset
 }
 
+fn part2<'a>(input: &'a mut Lines) -> u32 {
+    let mut prios = Vec::new();
+    loop {
+        let triplet: Vec<&'a str> = input.take(3).collect();
+        if triplet.len() == 3 {
+            prios.push(get_dup_p2(&triplet).unwrap());
+        } else {
+            break;
+        }
+    }
+    prios.into_iter().map(|c| priority(&c)).into_iter().sum()
+}
 fn main() {
-
-    let sum: u32 = INPUT.lines().map(|line| priority(&get_dup_item_type(line).unwrap())).sum();
+    let sum: u32 = INPUT
+        .lines()
+        .map(|line| priority(&get_dup_item_type(line).unwrap()))
+        .sum();
+    let sum2: u32 = part2(&mut INPUT.lines());
     println!("{sum}");
+    println!("{sum2}");
 }
